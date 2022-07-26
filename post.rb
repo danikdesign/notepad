@@ -25,6 +25,8 @@ class Post
 
     query += "LIMIT :limit " unless limit.nil?
 
+    begin
+
     statement = db.prepare(query)
 
     statement.bind_param('type', type) unless type.nil?
@@ -32,6 +34,15 @@ class Post
 
     result = statement.execute!
 
+    rescue SQLite3::SQLException => error
+      puts
+      puts "Произошла ошибка! Файл базы данных отсутствует или поврежден: " + error.message
+      puts
+      puts "Программа завершена автоматически"
+      puts
+
+      exit
+    end
     statement.close
     db.close
 
@@ -44,10 +55,21 @@ class Post
 
     db.results_as_hash = true
 
+    begin
+
     result = db.execute("SELECT * FROM posts WHERE rowid = ?", id)
 
     result = result[0] if result.is_a? Array
 
+    rescue SQLite3::SQLException => error
+      puts
+      puts "Произошла ошибка! Файл базы данных отсутствует или поврежден: " + error.message
+      puts
+      puts "Программа завершена автоматически"
+      puts
+
+      exit
+    end
     db.close
 
     if result.empty?
@@ -97,6 +119,8 @@ class Post
     db = SQLite3::Database.open(@@SQLite_DB_FILE)
     db.results_as_hash = true
 
+    begin
+
     db.execute(
       "INSERT INTO posts (" +
         to_db_hash.keys.join(',') +
@@ -112,6 +136,16 @@ class Post
     db.close
 
     return insert_row_id
+
+    rescue SQLite3::SQLException => error
+    puts
+    puts "Произошла ошибка! Файл базы данных отсутствует или поврежден: " + error.message
+    puts
+    puts "Ваша запись не сохранена :`( Программа завершена автоматически"
+    puts
+
+    exit
+    end
   end
 
   def to_db_hash
