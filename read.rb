@@ -20,25 +20,25 @@ OptionParser.new do |opt|
   opt.on('--limit NUMBER', 'сколько последних постов показать (по умолчанию все)') { |o| options[:limit] = o }
 end.parse!
 
-result = Post.find(options[:limit], options[:type], options[:id])
+if !options[:id].nil?
+  result = Post.find_by_id(options[:id])
 
-if result.is_a? Post
   puts "Запись #{result.class.name}, id = #{options[:id]}"
 
   result.to_strings.each do |line|
     puts line
-  end
-
+    end
 else
-  print "|id\t| @type\t| @created_at\t\t\t| @text \t\t\t| @url\t\t| @due_date \t "
+  result = Post.find(options[:limit], options[:type])
+
+  print "|id\t| @type\t| @created_at\t\t\t| @text\t\t\t| @url\t\t| @due_date\t "
   result.each do |row|
     puts
 
     row.each do |element|
-      print "| #{element.to_s.delete("\\n\\r")[0..40]}\t"
+      print "| #{element.to_s[0..40]}\t"
     end
   end
-
 end
 
 puts
